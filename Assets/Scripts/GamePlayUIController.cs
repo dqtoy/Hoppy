@@ -75,7 +75,7 @@ public class GamePlayUIController : MonoBehaviour
             {
                 if (!freeGiftBtn.gameObject.activeSelf)
                 {
-                    //TODO:只执行一次
+                    CheckFreeGiftStatus();
                 }
             }
         }
