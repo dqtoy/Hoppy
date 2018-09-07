@@ -208,7 +208,7 @@ public class GamePlayUIController : MonoBehaviour
     public void onModelShopButtonClicked()
     {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
-        // TODO:加载商店场景
+        SceneManager.LoadScene("Shop");
     }
 
     public void onLeaderboardButtonClicked()
