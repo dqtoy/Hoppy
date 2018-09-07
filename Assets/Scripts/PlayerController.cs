@@ -40,8 +40,6 @@ public class PlayerController : MonoBehaviour {
 
 	#endregion
 
-
-
 	#region Unity回调
 
 	void Start ()
@@ -62,8 +60,6 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	#endregion
-
-
 
 	#region 游戏状态控制
 
@@ -103,8 +99,6 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	#endregion
-
-
 
 	#region 小球控制
 

@@ -5,212 +5,232 @@ using UnityEngine.SceneManagement;
 using System;
 
 
-public class GamePlayUIController : MonoBehaviour {
+public class GamePlayUIController : MonoBehaviour
+{
 
-	#region 变量声明
+    #region 变量声明
 
-	public GameObject player;
+    public GameObject player;
 
-	// 每步计分
-	[HideInInspector]
-	public int score;
+    // 每步计分
+    [HideInInspector]
+    public int score;
 
-	// 钻石数量Text
-	public Text numberOfGemsText;
+    // 钻石数量Text
+    public Text numberOfGemsText;
 
-	// 开始UI
-	public GameObject startMenu;
-	// 游戏UI
-	public GameObject gameMenu;
-	// 游戏结束UI
-	public GameObject gameOverMenu;
-	// 奖励UI
-	public GameObject prizeMenu;
+    // 开始UI
+    public GameObject startMenu;
+    // 游戏UI
+    public GameObject gameMenu;
+    // 游戏结束UI
+    public GameObject gameOverMenu;
+    // 奖励UI
+    public GameObject prizeMenu;
 
-	// 当前得分Text（游戏中和游戏结束UI上）
-	public Text[] scoreTexts;
-	// 最高得分Text（开始和游戏结束UI上）
-	public Text[] bestScoreTexts;
+    // 当前得分Text（游戏中和游戏结束UI上）
+    public Text[] scoreTexts;
+    // 最高得分Text（开始和游戏结束UI上）
+    public Text[] bestScoreTexts;
 
     // 游戏结束UI上的Panels(奖励视频，免费礼品，新模型，评价我们和提升)
     public RectTransform[] gameOverPanels;
 
-	// 奖励的钻石Image
-	public Image newGemsImage;
-	// 奖励的钻石Text
-	public Text newGemsText;
-	// 奖励的新球
-	public Text newBallText;
+    public GameObject giftImage;
+    private bool isRewarding = false;
+    // 免费礼物
+    public Text dailyRewardTimeText;
+    public Button freeGiftBtn;
 
-	#endregion
+    public
 
-	#region Unity回调
-		
-	void Start ()
-	{
-		startMenu.SetActive (true);
-		gameMenu.SetActive (false);
-		gameOverMenu.SetActive (false);
-		prizeMenu.SetActive (false);
+    #endregion
 
-		int bestScore = PlayerPrefs.GetInt("Best Score");
-		updateBestScoreUITexts (bestScore);
+    #region Unity回调
 
-		// 更新显示的钻石数量
-		updateNumberOfGemsUITexts ();
-	}
+    void Start()
+    {
+        startMenu.SetActive(true);
+        gameMenu.SetActive(false);
+        gameOverMenu.SetActive(false);
+        prizeMenu.SetActive(false);
 
-	#endregion
+        int bestScore = PlayerPrefs.GetInt("Best Score");
+        updateBestScoreUITexts(bestScore);
 
-	#region 游戏状态方法
+        // 更新显示的钻石数量
+        updateNumberOfGemsUITexts();
+    }
 
-	public void onGameStarted ()
-	{
-		startMenu.SetActive (false);
-		gameMenu.SetActive (true);
-		gameOverMenu.SetActive (false);
-		prizeMenu.SetActive (false);
+    private void Update()
+    {
+        if (dailyRewardTimeText.gameObject.activeSelf)
+        {
+            if (!DailyRewardController.Instance.CanRewardNow())
+            {
+                TimeSpan timeToReward = DailyRewardController.Instance.TimeUntilReward;
+                dailyRewardTimeText.text = string.Format("{0:00}:{1:00}:{2:00}", timeToReward.Hours, timeToReward.Minutes, timeToReward.Seconds);
+            }
+            else
+            {
+                if (!freeGiftBtn.gameObject.activeSelf)
+                {
+                    //TODO:只执行一次
+                }
+            }
+        }
+    }
+    #endregion
 
-		// 增加游戏次数，用于决定什么时候弹出点赞面板
-		int gamesPlayed = PlayerPrefs.GetInt ("GamesPlayed");
-		gamesPlayed++;
-		PlayerPrefs.SetInt ("GamesPlayed", gamesPlayed);
-	}
+    #region 游戏状态方法
 
-	public void onGameOver ()
-	{
-		// 是否更新最高记录
-		int bestScore = PlayerPrefs.GetInt("Best Score");
-		if (score > bestScore)
-		{
-			PlayerPrefs.SetInt ("Best Score", score);
-			updateBestScoreUITexts (score);
-		}
-		else
-		{
-			updateBestScoreUITexts (bestScore);
-		}
+    public void onGameStarted()
+    {
+        startMenu.SetActive(false);
+        gameMenu.SetActive(true);
+        gameOverMenu.SetActive(false);
+        prizeMenu.SetActive(false);
 
-		
-		startMenu.SetActive (false);
-		gameMenu.SetActive (false);
-		gameOverMenu.SetActive (true);
-		prizeMenu.SetActive (false);
+        // 增加游戏次数，用于决定什么时候弹出点赞面板
+        int gamesPlayed = PlayerPrefs.GetInt("GamesPlayed");
+        gamesPlayed++;
+        PlayerPrefs.SetInt("GamesPlayed", gamesPlayed);
+    }
 
-		// 检测游戏结束UI状态
-		checkGameOverPanelsStatus ();
+    public void onGameOver()
+    {
+        // 是否更新最高记录
+        int bestScore = PlayerPrefs.GetInt("Best Score");
+        if (score > bestScore)
+        {
+            PlayerPrefs.SetInt("Best Score", score);
+            updateBestScoreUITexts(score);
+        }
+        else
+        {
+            updateBestScoreUITexts(bestScore);
+        }
 
-		// 游戏结束UI上的面板动画
-		for (int i = 0; i< gameOverPanels.Length; i++)
-		{
-			StartCoroutine (animatePanel(gameOverPanels[i]));
-		}
-	}
 
-	#endregion
+        startMenu.SetActive(false);
+        gameMenu.SetActive(false);
+        gameOverMenu.SetActive(true);
+        prizeMenu.SetActive(false);
 
-	#region 更新数值
+        // 检测游戏结束UI状态
+        checkGameOverPanelsStatus();
 
-	public void updateScoreUITexts ()
-	{
-		// 更新所有的当前得分
-		for (int i = 0; i < scoreTexts.Length; i++)
-		{
-			scoreTexts [i].text = "" + score;
-		}
-	}
+        // 游戏结束UI上的面板动画
+        for (int i = 0; i < gameOverPanels.Length; i++)
+        {
+            StartCoroutine(animatePanel(gameOverPanels[i]));
+        }
+    }
 
-	public void updateBestScoreUITexts (int bestScore)
-	{
-		// 更新所有的最高记录
-		for (int i = 0; i < bestScoreTexts.Length; i++)
-		{
-			bestScoreTexts[i].text = "记录: " + bestScore;
-		}
-	}
+    #endregion
 
-	public void updateNumberOfGemsUITexts ()
-	{
-		// 更新钻石数量
-		int numberOfGems = PlayerPrefs.GetInt ("NumberOfPickUps");
-		numberOfGemsText.text = "" + numberOfGems;
-	}
+    #region 更新数值
 
-	
+    public void updateScoreUITexts()
+    {
+        // 更新所有的当前得分
+        for (int i = 0; i < scoreTexts.Length; i++)
+        {
+            scoreTexts[i].text = "" + score;
+        }
+    }
 
-	#endregion
+    public void updateBestScoreUITexts(int bestScore)
+    {
+        // 更新所有的最高记录
+        for (int i = 0; i < bestScoreTexts.Length; i++)
+        {
+            bestScoreTexts[i].text = "记录: " + bestScore;
+        }
+    }
 
-	#region UI动画
+    public void updateNumberOfGemsUITexts()
+    {
+        // 更新钻石数量
+        int numberOfGems = PlayerPrefs.GetInt("NumberOfPickUps");
+        numberOfGemsText.text = "" + numberOfGems;
+    }
 
-	IEnumerator animatePanel (RectTransform animatingPanel)
-	{
-		Vector2 canvasSize = GetComponent<RectTransform> ().sizeDelta;
 
-		// 移动Panel到屏幕左边
-		animatingPanel.anchoredPosition = new Vector3 (-canvasSize.x, animatingPanel.anchoredPosition.y, 0);
 
-		// 动画结束位置
-		Vector3 targetPosition = new Vector3 (0, animatingPanel.anchoredPosition.y, 0);
+    #endregion
 
-		// 每帧在X轴上移动的大小
-		float xPosStep = 20;
+    #region UI动画
 
-		while (true)
-		{
-			// 每帧在x方向加一个步进
-			animatingPanel.anchoredPosition = new Vector3 (animatingPanel.anchoredPosition.x + xPosStep, animatingPanel.anchoredPosition.y, 0);
-	
-			if (animatingPanel.anchoredPosition.x >= targetPosition.x)
-			{
-				// 如果到达或者超出目标位置
+    IEnumerator animatePanel(RectTransform animatingPanel)
+    {
+        Vector2 canvasSize = GetComponent<RectTransform>().sizeDelta;
 
-				// 就用目标位置直接设置面板的位置
-				animatingPanel.anchoredPosition = targetPosition;
+        // 移动Panel到屏幕左边
+        animatingPanel.anchoredPosition = new Vector3(-canvasSize.x, animatingPanel.anchoredPosition.y, 0);
 
-				yield break;
-			}
+        // 动画结束位置
+        Vector3 targetPosition = new Vector3(0, animatingPanel.anchoredPosition.y, 0);
 
-			// 否则下一帧继续执行
-			yield return null;
-		}
-	}
+        // 每帧在X轴上移动的大小
+        float xPosStep = 20;
 
-	#endregion
+        while (true)
+        {
+            // 每帧在x方向加一个步进
+            animatingPanel.anchoredPosition = new Vector3(animatingPanel.anchoredPosition.x + xPosStep, animatingPanel.anchoredPosition.y, 0);
 
-	#region 按钮点击
+            if (animatingPanel.anchoredPosition.x >= targetPosition.x)
+            {
+                // 如果到达或者超出目标位置
 
-	public void onSettingsButtonClicked ()
-	{
+                // 就用目标位置直接设置面板的位置
+                animatingPanel.anchoredPosition = targetPosition;
+
+                yield break;
+            }
+
+            // 否则下一帧继续执行
+            yield return null;
+        }
+    }
+
+    #endregion
+
+    #region 按钮点击
+
+    public void onSettingsButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
-		SceneManager.LoadScene ("Settings");
-	}
+        SceneManager.LoadScene("Settings");
+    }
 
-	public void onModelShopButtonClicked ()
-	{
+    public void onModelShopButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
         // TODO:加载商店场景
     }
 
-	public void onLeaderboardButtonClicked ()
-	{
+    public void onLeaderboardButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
         // TODO:显示排行榜
     }
 
-	public void onRestartButtonClicked ()
-	{
+    public void onRestartButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
-        SceneManager.LoadScene ("GamePlay");
-	}
+        SceneManager.LoadScene("GamePlay");
+    }
 
-	public void onShareButtonClicked ()
-	{
+    public void onShareButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
         // TODO:显示分享
     }
 
-	public void onRateUsButtonClicked ()
-	{
+    public void onRateUsButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
         // TODO:打开AppStore的好评界面
 #if UNITY_ANDROID
@@ -220,8 +240,8 @@ public class GamePlayUIController : MonoBehaviour {
 #endif
     }
 
-	public void onPromotionButtonClicked ()
-	{
+    public void onPromotionButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
         // TODO:打开推广界面
 #if UNITY_ANDROID
@@ -231,57 +251,131 @@ public class GamePlayUIController : MonoBehaviour {
 #endif
     }
 
-	public void onFreeGiftButtonClicked ()
-	{
+    public void onFreeGiftButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
-        // TODO:免费礼物
+        if (DailyRewardController.Instance.CanRewardNow())
+        {
+            // 刷新下次免费礼物时间
+            DailyRewardController.Instance.ResetNextRewardTime();
+            ShowPrizeMenu();
+        }
     }
 
-	public void onPrizeDoneButtonClicked ()
-	{
+    public void onPrizeDoneButtonClicked()
+    {
         SoundManager.Instance.PlaySound(SoundManager.Instance.button);
         // 检查游戏结束UI的状态
-        checkGameOverPanelsStatus ();
+        checkGameOverPanelsStatus();
 
-		startMenu.SetActive (false);
-		gameMenu.SetActive (false);
-		gameOverMenu.SetActive (true);
-		prizeMenu.SetActive (false);
-	}
+        startMenu.SetActive(false);
+        gameMenu.SetActive(false);
+        gameOverMenu.SetActive(true);
+        prizeMenu.SetActive(false);
 
-	#endregion
+        // 刷新钻石数
+        updateNumberOfGemsUITexts();
+    }
 
-	#region 更新游戏结束面板的状态
+    #endregion
 
-	void checkGameOverPanelsStatus()
-	{
-		// 更新免费礼物面板状态
-		gameOverPanels [0].gameObject.SetActive (true);
+    #region 更新游戏结束面板的状态
 
-		// 好评&&推广面板
-		int gamesPlayed = PlayerPrefs.GetInt ("GamesPlayed");
-		if (gamesPlayed % 14 == 0)
-		{
-			// 每玩14次就显示好评面板
-			gameOverPanels [0].gameObject.SetActive (false);
-			gameOverPanels [1].gameObject.SetActive (true);
-			gameOverPanels [2].gameObject.SetActive (false);
-		}
-		else if (gamesPlayed % 5 == 0)
-		{
-			// 每玩5次显示推广面板（广告）
-			gameOverPanels [0].gameObject.SetActive (false);
-			gameOverPanels [1].gameObject.SetActive (false);
-			gameOverPanels [2].gameObject.SetActive (true);
-		}
-	}
+    void checkGameOverPanelsStatus()
+    {
+        // 好评&&推广面板
+        int gamesPlayed = PlayerPrefs.GetInt("GamesPlayed");
+        if (gamesPlayed % 14 == 0)
+        {
+            // 每玩14次就显示好评面板
+            gameOverPanels[0].gameObject.SetActive(false);
+            gameOverPanels[1].gameObject.SetActive(true);
+            gameOverPanels[2].gameObject.SetActive(false);
+        }
+        else if (gamesPlayed % 5 == 0)
+        {
+            // 每玩5次显示推广面板（广告）
+            gameOverPanels[0].gameObject.SetActive(false);
+            gameOverPanels[1].gameObject.SetActive(false);
+            gameOverPanels[2].gameObject.SetActive(true);
+        }
+        else
+        {
+            // 更新免费礼物面板状态
+            gameOverPanels[0].gameObject.SetActive(true);
+            CheckFreeGiftStatus();
+        }
+    }
 
     private void CheckFreeGiftStatus()
     {
-        //TimeSpan 
-        string oldTimeStr = PlayerPrefs.HasKey("TimeStamp")?PlayerPrefs.GetString("TimeStamp"): "0000-00-00 00:00:00";
-        DateTime oldTime = Convert.ToDateTime(oldTimeStr);
+        if (DailyRewardController.Instance.CanRewardNow())
+        {
+            dailyRewardTimeText.gameObject.SetActive(false);
+            freeGiftBtn.gameObject.SetActive(true);
+        }
+        else
+        {
+            dailyRewardTimeText.gameObject.SetActive(true);
+            freeGiftBtn.gameObject.SetActive(false);
+        }
     }
 
-	#endregion
+    private void ShowPrizeMenu()
+    {
+        startMenu.SetActive(false);
+        gameMenu.SetActive(false);
+        gameOverMenu.SetActive(false);
+        prizeMenu.SetActive(true);
+
+        int reward = DailyRewardController.Instance.GetRandomReward();
+        int roundedReward = (reward / 5) * 5;
+        int numberOfPickUps = PlayerPrefs.GetInt("NumberOfPickUps");
+        numberOfPickUps+= roundedReward;
+        PlayerPrefs.SetInt("NumberOfPickUps", numberOfPickUps);
+        GameObject newGems = prizeMenu.transform.Find("New Gems").gameObject;
+        Text newGemsText = newGems.transform.Find("New Gems Image/New Gems Text").GetComponent<Text>();
+        newGemsText.text = "+" + roundedReward;
+        newGems.gameObject.SetActive(false);
+        giftImage.gameObject.SetActive(true);
+        StartCoroutine(PlayRewardAnim());
+    }
+
+    private IEnumerator PlayRewardAnim()
+    {
+        isRewarding = true;
+
+        float start = Time.time;
+
+        while (Time.time - start < 2f)
+        {
+            giftImage.transform.eulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(-10f, 10f));
+            giftImage.transform.localScale = new Vector3(UnityEngine.Random.Range(0.9f, 1.3f), UnityEngine.Random.Range(0.9f, 1.3f), UnityEngine.Random.Range(0.9f, 1.3f));
+            yield return new WaitForSeconds(0.07f);
+        }
+
+        start = Time.time;
+        Vector3 startScale = giftImage.transform.localScale;
+
+        while (Time.time - start < 0.15f)
+        {
+            giftImage.transform.localScale = Vector3.Lerp(startScale, Vector3.one * 20f, (Time.time - start) / 0.2f);
+            yield return null;
+        }
+
+        giftImage.gameObject.SetActive(false);
+
+        // Show reward
+        GameObject newGems = prizeMenu.transform.Find("New Gems").gameObject;
+        newGems.SetActive(true);
+
+        yield return new WaitForSeconds(0.2f);
+
+        SoundManager.Instance.PlaySound(SoundManager.Instance.rewarded);
+
+        yield return new WaitForSeconds(3f);
+
+        isRewarding = false;
+    }
+    #endregion
 }
