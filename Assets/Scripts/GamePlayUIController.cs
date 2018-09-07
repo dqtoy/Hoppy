@@ -275,6 +275,10 @@ public class GamePlayUIController : MonoBehaviour
 
         // 刷新钻石数
         updateNumberOfGemsUITexts();
+
+        ParticleSystem giftParticle = prizeMenu.transform.Find("Gift Fx").GetComponent<ParticleSystem>();
+
+        giftParticle.gameObject.SetActive(false);
     }
 
     #endregion
@@ -373,9 +377,13 @@ public class GamePlayUIController : MonoBehaviour
 
         SoundManager.Instance.PlaySound(SoundManager.Instance.rewarded);
 
-        yield return new WaitForSeconds(3f);
-
         isRewarding = false;
+
+        ParticleSystem giftParticle = prizeMenu.transform.Find("Gift Fx").GetComponent<ParticleSystem>();
+
+        giftParticle.gameObject.SetActive(true);
+
+        giftParticle.Play();
     }
     #endregion
 }
