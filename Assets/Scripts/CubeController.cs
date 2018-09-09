@@ -353,7 +353,7 @@ public class CubeController : MonoBehaviour {
 	{
 		if (colorsList.Count > 0)
 			colorsList.Clear();
-		for (int i = 0; i <= 2; i++)
+		for (int i = 0; i < colorsOfTheCube.Length; i++)
 		{
 			colorsList.Add(colorsOfTheCube[i]);
 		}

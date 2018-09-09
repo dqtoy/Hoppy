@@ -1,0 +1,5 @@
+1.Splash.png是启动后最先看的图片，现在是一张大图，如果修改建议做成一张像logo一样的小图，背景用程序控制颜色
+2.Icon下是logo，应该是不同平台不同尺寸的多张
+3.Buttons/Shop Buttons/balls_unselect.png 需要修改为浅灰色，现在是墨绿色太丑了，比balls_select颜色浅些就行
+4.分享按钮左边应该是奖杯的按钮，目前也是商店按钮，需要美术做个按钮，产考分享按钮做两张（share_pressed、share_unpressed）
+5.礼物图片和礼物特效需要修改就修改（Textures/General Texture/gift.png和Prefabs/Gift Fx）

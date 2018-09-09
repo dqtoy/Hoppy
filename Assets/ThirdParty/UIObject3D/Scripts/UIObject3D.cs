@@ -786,7 +786,7 @@ namespace UI.ThreeDimensional
 
                 return _objectLayer;
             }
-        }            
-        #endregion                
+        }
+        #endregion
     }
 }
