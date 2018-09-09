@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour {
 	// 碰到钻石的特效Prefab
     public GameObject gemsExplosion;
 
+    public GameObject[] ballsAry;
+
 	// 球在x轴向的滑动速度
     private float slidingSpeed = 0.03f;
 	// 球在x方向的位置限制
@@ -45,8 +47,9 @@ public class PlayerController : MonoBehaviour {
 	void Start ()
 	{
 		// 游戏开始后再启用重力
-		Physics.gravity = new Vector3(0, 0, 0);		
-	}
+		Physics.gravity = new Vector3(0, 0, 0);
+        initCurBall();
+    }
 
 	void Update ()
 	{
@@ -202,5 +205,22 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	#endregion
+    void initCurBall()
+    {
+        GameObject curBall = null;
+        string curBallName = PlayerPrefs.GetString("CurBall", "Ball1");
+        for (int i = 0; i < ballsAry.Length; ++i)
+        {
+            if (ballsAry[i].name.Equals(curBallName))
+            {
+                curBall = ballsAry[i];
+                break;
+            }
+        }
+
+        Material curBallMat = curBall.GetComponent<MeshRenderer>().sharedMaterial;
+        gameObject.GetComponent<MeshRenderer>().material = curBallMat;
+    }
+
+    #endregion
 }

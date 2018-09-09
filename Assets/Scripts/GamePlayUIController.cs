@@ -382,8 +382,6 @@ public class GamePlayUIController : MonoBehaviour
         ParticleSystem giftParticle = prizeMenu.transform.Find("Gift Fx").GetComponent<ParticleSystem>();
 
         giftParticle.gameObject.SetActive(true);
-
-        giftParticle.Play();
     }
     #endregion
 }

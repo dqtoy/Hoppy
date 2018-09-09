@@ -61,7 +61,15 @@ public class SplashController : MonoBehaviour {
 			PlayerPrefs.SetInt("Best Score", 0);
 			// 碰撞钻石次数
 			PlayerPrefs.SetInt("NumberOfPickUps", 0);
-		}
+            // 解锁小球，第十个用于测试
+            for (int i = 1; i <= 40; ++i)
+            {
+                if (i != 10)
+                {
+                    PlayerPrefs.SetInt("Ball" + i, 1);
+                }
+            }
+        }
 		else
 		{
 			// 不是第一次启动游戏
