@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -382,6 +382,8 @@ public class GamePlayUIController : MonoBehaviour
         ParticleSystem giftParticle = prizeMenu.transform.Find("Gift Fx").GetComponent<ParticleSystem>();
 
         giftParticle.gameObject.SetActive(true);
+
+        giftParticle.Play();
     }
     #endregion
 }
