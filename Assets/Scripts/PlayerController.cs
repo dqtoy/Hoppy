@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour {
     public GameObject[] ballsAry;
 
 	// 球在x轴向的滑动速度
-    private float slidingSpeed = 0.03f;
+    private float slidingSpeed = 0.02f;
 	// 球在x方向的位置限制
 	private float xPosLimit = 5f;
 	// 在z轴向的跳跃距离
