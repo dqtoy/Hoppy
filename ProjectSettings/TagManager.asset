@@ -4,9 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Pick Up
   - cube
   - GamePlayCanvas
+  - Pick Up
   layers:
   - Default
   - TransparentFX
@@ -17,7 +17,7 @@ TagManager:
   - 
   - 
   - UIObject3D
-  - Plank
+  - 
   - 
   - 
   - 

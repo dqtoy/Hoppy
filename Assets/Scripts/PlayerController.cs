@@ -1,19 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
 
     #region 变量定义
 
+    public Rigidbody playerRigidbody;
+
+    private float speedFactor;
+
+    public Slider speedFactorSlider;
+
+    public float targetXSpeed;
 	// 碰到钻石的特效Prefab
     public GameObject gemsExplosion;
 
     public GameObject[] ballsAry;
 
 	// 球在x轴向的滑动速度
-    private float slidingSpeed = 0.02f;
-	// 球在x方向的位置限制
-	private float xPosLimit = 5f;
+    private float slidingSpeed = 0f;
+
+    private float minDis = 1f;
+
+    // 球在x方向的位置限制
+    private float xPosLimit = 5f;
 	// 在z轴向的跳跃距离
 	private float jumpDistance = 4f;
 	// 在Y轴向的跳跃高度
@@ -48,25 +59,68 @@ public class PlayerController : MonoBehaviour {
 	{
 		// 游戏开始后再启用重力
 		Physics.gravity = new Vector3(0, 0, 0);
+
+        speedFactor = PlayerPrefs.GetFloat("SpeedFactor", 0.35f);
+
+        speedFactorSlider.value = speedFactor;
+
+        speedFactorSlider.onValueChanged.AddListener(OnSpeedFactorChanged);
+
         initCurBall();
     }
 
 	void Update ()
 	{
-		// 使用触摸输入键盘和控制滑动
-		controlSliding ();
-		// 控制小球旋转
-		controlBallRotation ();
+        // 使用触摸输入键盘和控制滑动
+        controlSliding();
 
-		// Check whether game is over or not.
-		checkGameOver ();
-	}
+        // 控制小球旋转
+        controlBallRotation();
 
-	#endregion
+        // Check whether game is over or not.
+        checkGameOver();
+    }
 
-	#region 游戏状态控制
+    void controlSliding()
+    {
+        if (gameStarted && !gameOver)
+        {
+            if (Input.touchCount > 0)
+            {
+                if (Input.GetTouch(0).phase == TouchPhase.Moved)
+                {
+                    if (Input.GetTouch(0).deltaPosition.sqrMagnitude > minDis)
+                    {
+                        slidingSpeed = Input.GetTouch(0).deltaPosition.x;
+                    }
+                }
+                else if (Input.GetTouch(0).phase == TouchPhase.Stationary)
+                {
+                    slidingSpeed = 0f;
+                }
+            }
+            else if (useKeyboard)
+            {
+                // 用键盘的左右方向键控制滑动
+                float moveHorizontal = Input.GetAxis("Horizontal");
 
-	public void startGame ()
+                slidingSpeed = moveHorizontal * 7;
+            }
+
+            targetXSpeed = Mathf.Lerp(playerRigidbody.velocity.x, slidingSpeed * speedFactor * 10f, Time.deltaTime);
+            // 限制小球的位置在xPosLimit和-xPosLimit之间
+            playerRigidbody.velocity = new Vector3(targetXSpeed, playerRigidbody.velocity.y, playerRigidbody.velocity.z);
+
+            // 限制小球的位置在xPosLimit和-xPosLimit之间
+            transform.position = new Vector3(Mathf.Clamp(transform.position.x, -xPosLimit, xPosLimit), transform.position.y, transform.position.z);
+        }
+    }
+
+    #endregion
+
+    #region 游戏状态控制
+
+    public void startGame ()
 	{
 		if (!gameStarted)
 		{
@@ -85,7 +139,7 @@ public class PlayerController : MonoBehaviour {
             // 游戏结束
             SoundManager.Instance.PlaySound(SoundManager.Instance.gameOver);
             // 停止所有力
-            GetComponent<Rigidbody>().velocity = Vector3.zero;
+            playerRigidbody.velocity = Vector3.zero;
 
 			// 增加重力
 			Physics.gravity = new Vector3(0, maxGravity -50.0f, 0);
@@ -101,31 +155,9 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	#endregion
+    #endregion
 
-	#region 小球控制
-
-	void controlSliding ()
-	{
-		if (gameStarted && !gameOver)
-		{
-			if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
-			{
-				// 用触摸控制滑动
-				Vector2 touchDeltaPosition = Input.GetTouch(0).deltaPosition;
-				transform.Translate(touchDeltaPosition.x * slidingSpeed, 0, 0);
-			}
-			else if (useKeyboard)
-			{
-				// 用键盘的左右方向键控制滑动
-				float moveHorizontal = Input.GetAxis ("Horizontal");
-				transform.Translate(moveHorizontal * slidingSpeed * 7, 0, 0);
-			}
-
-            // 限制小球的位置在xPosLimit和-xPosLimit之间
-            transform.position = new Vector3 (Mathf.Clamp(transform.position.x, - xPosLimit, xPosLimit), transform.position.y, transform.position.z);
-		}
-	}
+    #region 小球控制
 
     public void OnTriggerEnter(Collider col)
     {
@@ -163,7 +195,7 @@ public class PlayerController : MonoBehaviour {
 
 
             // 用计算好的速度发射小球
-            GetComponent<Rigidbody>().velocity = new Vector3(0, vSpeed, fSpeed);
+            playerRigidbody.velocity = new Vector3(0, vSpeed, fSpeed);
         }
         if (col.tag == "Pick Up")
         {
@@ -222,5 +254,18 @@ public class PlayerController : MonoBehaviour {
         gameObject.GetComponent<MeshRenderer>().material = curBallMat;
     }
 
+    private void OnSpeedFactorChanged(float value)
+    {
+        if (value!= speedFactor)
+        {
+            PlayerPrefs.SetFloat("SpeedFactor", value);
+        }
+    }
+
+
+    private void OnDisable()
+    {
+        speedFactorSlider.onValueChanged.RemoveAllListeners();
+    }
     #endregion
 }
